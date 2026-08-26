@@ -366,14 +366,18 @@ html {
 .panel-stage {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 2rem;
 }
 
 .panel-card {
   background: #f5f5f5;
+}
+
+.panel-copy {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 0;
 }
 
 .panel-title {
@@ -416,21 +420,21 @@ html {
 .panel-speakers {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
   min-width: 0;
 }
 
-.panel-speakers-head {
+.panel-speakers-foot {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 1rem;
+  justify-content: center;
 }
 
 .panel-carousel-nav {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
 }
 
@@ -715,11 +719,11 @@ html {
 
   .panel-stage {
     flex-direction: row;
-    align-items: start;
-    gap: 3rem 4rem;
+    align-items: stretch;
+    gap: 2.5rem 3rem;
   }
 
-  .panel-card {
+  .panel-copy {
     flex: 1 1 48%;
   }
 
@@ -730,6 +734,7 @@ html {
 
   .panel-speakers {
     flex: 1 1 44%;
+    justify-content: space-between;
   }
 
   .panel-carousel-track {
