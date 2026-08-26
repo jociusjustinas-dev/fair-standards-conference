@@ -59,24 +59,22 @@ document.addEventListener("DOMContentLoaded", function () {
     updateContrast();
   }
 
-  (function initPanelCarousel() {
-    document.querySelectorAll("[data-panel-carousel]").forEach(function (root) {
+  (function initPanelTabs() {
+    var speakerCarousels = [];
+
+    document.querySelectorAll("[data-speaker-carousel]").forEach(function (root) {
       var viewport = root.querySelector(".panel-carousel-viewport");
-      var track = root.querySelector("[data-panel-track]");
-      var items = Array.from(root.querySelectorAll("[data-panel-index]"));
-      var prevBtn = root.querySelector("[data-panel-prev]");
-      var nextBtn = root.querySelector("[data-panel-next]");
-      var dotsWrap = root.querySelector("[data-panel-dots]");
+      var track = root.querySelector("[data-speaker-track]");
+      var items = Array.from(root.querySelectorAll(".panel-speaker"));
+      var prevBtn = root.querySelector("[data-speaker-prev]");
+      var nextBtn = root.querySelector("[data-speaker-next]");
+      var dotsWrap = root.querySelector("[data-speaker-dots]");
       if (!viewport || !track || !items.length) return;
 
       var page = 0;
       var dots = [];
-      var desktopMq = window.matchMedia("(min-width: 1024px)");
-      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      function perView() {
-        return desktopMq.matches ? 2 : 1;
-      }
+      var perView = 2;
+      var reduceMotionLocal = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       function gapPx() {
         var styles = window.getComputedStyle(track);
@@ -84,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       function pageCount() {
-        return Math.max(1, Math.ceil(items.length / perView()));
+        return Math.max(1, Math.ceil(items.length / perView));
       }
 
       function clamp(n) {
@@ -92,15 +90,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       function layout() {
-        var pv = perView();
         var gap = gapPx();
         var width = viewport.clientWidth;
-        var itemWidth = (width - gap * (pv - 1)) / pv;
+        if (!width) return null;
+        var itemWidth = (width - gap * (perView - 1)) / perView;
         items.forEach(function (item) {
           item.style.flex = "0 0 " + itemWidth + "px";
           item.style.width = itemWidth + "px";
         });
-        return { pv: pv, gap: gap, itemWidth: itemWidth };
+        return { gap: gap, itemWidth: itemWidth };
       }
 
       function rebuildDots() {
@@ -111,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
           var btn = document.createElement("button");
           btn.type = "button";
           btn.className = "panel-carousel-dot";
-          btn.setAttribute("aria-label", "Show panels page " + (i + 1));
+          btn.setAttribute("aria-label", "Speakers page " + (i + 1));
           btn.addEventListener(
             "click",
             (function (idx) {
@@ -125,13 +123,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      function go(nextPage, focusIndex) {
+      function go(nextPage) {
         var metrics = layout();
+        if (!metrics) return;
         page = clamp(nextPage);
-        var offset = page * metrics.pv * (metrics.itemWidth + metrics.gap);
-        track.style.transitionDuration = reduceMotion ? "0ms" : "";
+        var offset = page * perView * (metrics.itemWidth + metrics.gap);
+        track.style.transitionDuration = reduceMotionLocal ? "0ms" : "";
         track.style.transform = "translate3d(-" + offset + "px, 0, 0)";
-
         dots.forEach(function (dot, i) {
           var on = i === page;
           dot.classList.toggle("is-active", on);
@@ -139,64 +137,69 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         if (prevBtn) prevBtn.disabled = page === 0;
         if (nextBtn) nextBtn.disabled = page >= pageCount() - 1;
+      }
 
-        items.forEach(function (item) {
-          item.classList.remove("is-focus");
+      if (prevBtn) prevBtn.addEventListener("click", function () { go(page - 1); });
+      if (nextBtn) nextBtn.addEventListener("click", function () { go(page + 1); });
+
+      rebuildDots();
+      speakerCarousels.push({ refresh: function () { go(page); } });
+      go(0);
+    });
+
+    function refreshSpeakers() {
+      speakerCarousels.forEach(function (c) { c.refresh(); });
+    }
+
+    window.addEventListener("resize", refreshSpeakers);
+
+    document.querySelectorAll("[data-panel-tabs]").forEach(function (root) {
+      var tabs = Array.from(root.querySelectorAll('[role="tab"]'));
+      var panes = Array.from(root.querySelectorAll('[role="tabpanel"]'));
+      if (!tabs.length) return;
+
+      function activate(index) {
+        tabs.forEach(function (tab, i) {
+          var on = i === index;
+          tab.classList.toggle("is-active", on);
+          tab.setAttribute("aria-selected", on ? "true" : "false");
+          tab.tabIndex = on ? 0 : -1;
         });
-        if (focusIndex != null && items[focusIndex]) {
-          items[focusIndex].classList.add("is-focus");
-        }
-      }
-
-      function showPanel(index) {
-        if (!Number.isFinite(index) || index < 0 || index >= items.length) return;
-        go(Math.floor(index / perView()), index);
-      }
-
-      function onBreakpoint() {
-        rebuildDots();
-        go(Math.min(page, pageCount() - 1));
-      }
-
-      if (prevBtn) {
-        prevBtn.addEventListener("click", function () {
-          go(page - 1);
+        panes.forEach(function (pane, i) {
+          pane.hidden = i !== index;
         });
+        window.requestAnimationFrame(refreshSpeakers);
       }
-      if (nextBtn) {
-        nextBtn.addEventListener("click", function () {
-          go(page + 1);
-        });
-      }
-
-      root.addEventListener("keydown", function (e) {
-        if (e.key === "ArrowRight") {
-          e.preventDefault();
-          go(page + 1);
-        } else if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          go(page - 1);
-        }
-      });
 
       document.querySelectorAll("[data-open-panel]").forEach(function (link) {
         link.addEventListener("click", function () {
           var index = Number(link.getAttribute("data-open-panel"));
-          showPanel(index);
+          if (!Number.isFinite(index)) return;
+          activate(index);
         });
       });
 
-      if (desktopMq.addEventListener) desktopMq.addEventListener("change", onBreakpoint);
-      else if (desktopMq.addListener) desktopMq.addListener(onBreakpoint);
-      window.addEventListener("resize", function () {
-        go(page);
+      tabs.forEach(function (tab, index) {
+        tab.addEventListener("click", function () {
+          activate(index);
+        });
+        tab.addEventListener("keydown", function (e) {
+          var next = index;
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (index + 1) % tabs.length;
+          else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (index - 1 + tabs.length) % tabs.length;
+          else if (e.key === "Home") next = 0;
+          else if (e.key === "End") next = tabs.length - 1;
+          else return;
+          e.preventDefault();
+          activate(next);
+          tabs[next].focus();
+        });
       });
 
-      rebuildDots();
       var initial = 0;
       var panelParam = new URLSearchParams(window.location.search).get("panel");
       if (panelParam != null && Number.isFinite(Number(panelParam))) initial = Number(panelParam);
-      showPanel(initial);
+      activate(initial);
     });
   })();
 
