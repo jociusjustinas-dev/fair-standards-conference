@@ -371,6 +371,7 @@ html {
 
 .panel-card {
   background: #f5f5f5;
+  overflow: visible;
 }
 
 .panel-copy {
@@ -420,22 +421,14 @@ html {
 .panel-speakers {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   width: 100%;
   min-width: 0;
 }
 
-.panel-speakers-foot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.panel-carousel-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+.panel-carousel-shell {
+  position: relative;
+  width: 100%;
 }
 
 .panel-carousel-btn {
@@ -444,12 +437,13 @@ html {
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border: 1px solid #0d08381f;
+  border: 1px solid #0d083814;
   border-radius: 0.5rem;
-  background: transparent;
+  background: #fff;
   color: #0d0838;
   cursor: pointer;
-  transition: border-color 200ms ease, color 200ms ease;
+  transition: border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 4px 16px #0d083814;
 }
 
 .panel-carousel-btn:hover:not(:disabled) {
@@ -460,11 +454,29 @@ html {
 .panel-carousel-btn:disabled {
   opacity: 0.35;
   cursor: default;
+  box-shadow: none;
+}
+
+.panel-carousel-btn.is-edge {
+  position: absolute;
+  top: 36%;
+  z-index: 3;
+}
+
+.panel-carousel-btn.is-prev {
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+
+.panel-carousel-btn.is-next {
+  right: 0;
+  transform: translate(50%, -50%);
 }
 
 .panel-carousel-dots {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
 }
 
