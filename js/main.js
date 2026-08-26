@@ -68,11 +68,9 @@ document.addEventListener("DOMContentLoaded", function () {
       var items = Array.from(root.querySelectorAll(".panel-speaker"));
       var prevBtn = root.querySelector("[data-speaker-prev]");
       var nextBtn = root.querySelector("[data-speaker-next]");
-      var dotsWrap = root.querySelector("[data-speaker-dots]");
       if (!viewport || !track || !items.length) return;
 
       var page = 0;
-      var dots = [];
       var perView = 2;
       var reduceMotionLocal = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -101,28 +99,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return { gap: gap, itemWidth: itemWidth };
       }
 
-      function rebuildDots() {
-        if (!dotsWrap) return;
-        dotsWrap.innerHTML = "";
-        dots = [];
-        for (var i = 0; i < pageCount(); i++) {
-          var btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "panel-carousel-dot";
-          btn.setAttribute("aria-label", "Speakers page " + (i + 1));
-          btn.addEventListener(
-            "click",
-            (function (idx) {
-              return function () {
-                go(idx);
-              };
-            })(i)
-          );
-          dotsWrap.appendChild(btn);
-          dots.push(btn);
-        }
-      }
-
       function go(nextPage) {
         var metrics = layout();
         if (!metrics) return;
@@ -130,11 +106,6 @@ document.addEventListener("DOMContentLoaded", function () {
         var offset = page * perView * (metrics.itemWidth + metrics.gap);
         track.style.transitionDuration = reduceMotionLocal ? "0ms" : "";
         track.style.transform = "translate3d(-" + offset + "px, 0, 0)";
-        dots.forEach(function (dot, i) {
-          var on = i === page;
-          dot.classList.toggle("is-active", on);
-          dot.setAttribute("aria-current", on ? "true" : "false");
-        });
         if (prevBtn) prevBtn.disabled = page === 0;
         if (nextBtn) nextBtn.disabled = page >= pageCount() - 1;
       }
@@ -142,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (prevBtn) prevBtn.addEventListener("click", function () { go(page - 1); });
       if (nextBtn) nextBtn.addEventListener("click", function () { go(page + 1); });
 
-      rebuildDots();
       speakerCarousels.push({ refresh: function () { go(page); } });
       go(0);
     });

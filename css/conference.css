@@ -419,9 +419,6 @@ html {
 }
 
 .panel-speakers {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
   width: 100%;
   min-width: 0;
 }
@@ -471,29 +468,6 @@ html {
 .panel-carousel-btn.is-next {
   right: 0;
   transform: translate(50%, -50%);
-}
-
-.panel-carousel-dots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-}
-
-.panel-carousel-dot {
-  width: 0.45rem;
-  height: 0.45rem;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: #0d083828;
-  cursor: pointer;
-  transition: background-color 200ms ease, transform 200ms ease;
-}
-
-.panel-carousel-dot.is-active {
-  background: #5754ff;
-  transform: scale(1.15);
 }
 
 .panel-carousel-viewport {
@@ -746,7 +720,6 @@ html {
 
   .panel-speakers {
     flex: 1 1 44%;
-    justify-content: space-between;
   }
 
   .panel-carousel-track {
