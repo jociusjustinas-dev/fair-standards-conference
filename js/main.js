@@ -59,53 +59,144 @@ document.addEventListener("DOMContentLoaded", function () {
     updateContrast();
   }
 
-  (function initPanelTabs() {
-    document.querySelectorAll("[data-panel-tabs]").forEach(function (root) {
-      var tabs = Array.from(root.querySelectorAll('[role="tab"]'));
-      var panes = Array.from(root.querySelectorAll('[role="tabpanel"]'));
-      if (!tabs.length) return;
+  (function initPanelCarousel() {
+    document.querySelectorAll("[data-panel-carousel]").forEach(function (root) {
+      var viewport = root.querySelector(".panel-carousel-viewport");
+      var track = root.querySelector("[data-panel-track]");
+      var items = Array.from(root.querySelectorAll("[data-panel-index]"));
+      var prevBtn = root.querySelector("[data-panel-prev]");
+      var nextBtn = root.querySelector("[data-panel-next]");
+      var dotsWrap = root.querySelector("[data-panel-dots]");
+      if (!viewport || !track || !items.length) return;
 
-      function activate(index) {
-        tabs.forEach(function (tab, i) {
-          var on = i === index;
-          tab.classList.toggle("is-active", on);
-          tab.setAttribute("aria-selected", on ? "true" : "false");
-          tab.tabIndex = on ? 0 : -1;
+      var page = 0;
+      var dots = [];
+      var desktopMq = window.matchMedia("(min-width: 1024px)");
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function perView() {
+        return desktopMq.matches ? 2 : 1;
+      }
+
+      function gapPx() {
+        var styles = window.getComputedStyle(track);
+        return parseFloat(styles.columnGap || styles.gap) || 0;
+      }
+
+      function pageCount() {
+        return Math.max(1, Math.ceil(items.length / perView()));
+      }
+
+      function clamp(n) {
+        return Math.max(0, Math.min(pageCount() - 1, n));
+      }
+
+      function layout() {
+        var pv = perView();
+        var gap = gapPx();
+        var width = viewport.clientWidth;
+        var itemWidth = (width - gap * (pv - 1)) / pv;
+        items.forEach(function (item) {
+          item.style.flex = "0 0 " + itemWidth + "px";
+          item.style.width = itemWidth + "px";
         });
-        panes.forEach(function (pane, i) {
-          pane.hidden = i !== index;
+        return { pv: pv, gap: gap, itemWidth: itemWidth };
+      }
+
+      function rebuildDots() {
+        if (!dotsWrap) return;
+        dotsWrap.innerHTML = "";
+        dots = [];
+        for (var i = 0; i < pageCount(); i++) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "panel-carousel-dot";
+          btn.setAttribute("aria-label", "Show panels page " + (i + 1));
+          btn.addEventListener(
+            "click",
+            (function (idx) {
+              return function () {
+                go(idx);
+              };
+            })(i)
+          );
+          dotsWrap.appendChild(btn);
+          dots.push(btn);
+        }
+      }
+
+      function go(nextPage, focusIndex) {
+        var metrics = layout();
+        page = clamp(nextPage);
+        var offset = page * metrics.pv * (metrics.itemWidth + metrics.gap);
+        track.style.transitionDuration = reduceMotion ? "0ms" : "";
+        track.style.transform = "translate3d(-" + offset + "px, 0, 0)";
+
+        dots.forEach(function (dot, i) {
+          var on = i === page;
+          dot.classList.toggle("is-active", on);
+          dot.setAttribute("aria-current", on ? "true" : "false");
+        });
+        if (prevBtn) prevBtn.disabled = page === 0;
+        if (nextBtn) nextBtn.disabled = page >= pageCount() - 1;
+
+        items.forEach(function (item) {
+          item.classList.remove("is-focus");
+        });
+        if (focusIndex != null && items[focusIndex]) {
+          items[focusIndex].classList.add("is-focus");
+        }
+      }
+
+      function showPanel(index) {
+        if (!Number.isFinite(index) || index < 0 || index >= items.length) return;
+        go(Math.floor(index / perView()), index);
+      }
+
+      function onBreakpoint() {
+        rebuildDots();
+        go(Math.min(page, pageCount() - 1));
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", function () {
+          go(page - 1);
         });
       }
+      if (nextBtn) {
+        nextBtn.addEventListener("click", function () {
+          go(page + 1);
+        });
+      }
+
+      root.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          go(page + 1);
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          go(page - 1);
+        }
+      });
 
       document.querySelectorAll("[data-open-panel]").forEach(function (link) {
         link.addEventListener("click", function () {
           var index = Number(link.getAttribute("data-open-panel"));
-          if (!Number.isFinite(index)) return;
-          activate(index);
+          showPanel(index);
         });
       });
 
-      tabs.forEach(function (tab, index) {
-        tab.addEventListener("click", function () {
-          activate(index);
-        });
-        tab.addEventListener("keydown", function (e) {
-          var next = index;
-          if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (index + 1) % tabs.length;
-          else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (index - 1 + tabs.length) % tabs.length;
-          else if (e.key === "Home") next = 0;
-          else if (e.key === "End") next = tabs.length - 1;
-          else return;
-          e.preventDefault();
-          activate(next);
-          tabs[next].focus();
-        });
+      if (desktopMq.addEventListener) desktopMq.addEventListener("change", onBreakpoint);
+      else if (desktopMq.addListener) desktopMq.addListener(onBreakpoint);
+      window.addEventListener("resize", function () {
+        go(page);
       });
 
+      rebuildDots();
       var initial = 0;
       var panelParam = new URLSearchParams(window.location.search).get("panel");
       if (panelParam != null && Number.isFinite(Number(panelParam))) initial = Number(panelParam);
-      activate(initial);
+      showPanel(initial);
     });
   })();
 
