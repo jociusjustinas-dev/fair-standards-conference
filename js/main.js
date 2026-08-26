@@ -85,13 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
-      // Deep-link: #panels?panel=2 or hash open from agenda
-      var params = new URLSearchParams(window.location.search);
-      var panelParam = params.get("panel");
-      if (panelParam != null && Number.isFinite(Number(panelParam))) {
-        activate(Number(panelParam));
-      }
-
       tabs.forEach(function (tab, index) {
         tab.addEventListener("click", function () {
           activate(index);
@@ -109,7 +102,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
-      activate(0);
+      var initial = 0;
+      var panelParam = new URLSearchParams(window.location.search).get("panel");
+      if (panelParam != null && Number.isFinite(Number(panelParam))) initial = Number(panelParam);
+      activate(initial);
     });
   })();
 
