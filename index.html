@@ -250,29 +250,38 @@
             </div>
 
             <div class="about-stack flex flex-col" id="keynotes">
-              <article class="flex flex-col lg:flex-row gap-8 lg:gap-12 group" data-animation="fade-in">
-                <div class="keynote-media flex-1 w-full rounded-lg overflow-hidden relative aspect-[16/9]">
-                  <img src="https://fair-standards.org/wp-content/uploads/2026/04/Professional-Discussion-1.webp" alt="" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
-                  <div class="absolute top-0 left-0 w-full h-full roselinear"></div>
+              <article class="keynote-block group" data-animation="fade-in">
+                <div class="keynote-pair">
+                  <figure class="keynote-speaker">
+                    <div class="keynote-portrait rounded-lg overflow-hidden relative">
+                      <!-- TODO: replace with Judge Maria Izabel headshot -->
+                      <img src="https://fair-standards.org/wp-content/uploads/2026/04/Professional-Discussion-1.webp" alt="" class="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                      <div class="absolute top-0 left-0 w-full h-full roselinear"></div>
+                    </div>
+                    <figcaption class="keynote-caption">
+                      <p class="keynote-name">Judge Maria Izabel Gomes Santanna de Araújo</p>
+                      <p class="keynote-role">3rd Business Court of Rio de Janeiro</p>
+                    </figcaption>
+                  </figure>
+                  <figure class="keynote-speaker">
+                    <div class="keynote-portrait rounded-lg overflow-hidden relative">
+                      <!-- TODO: replace with Bernardo Cascao headshot -->
+                      <img src="https://fair-standards.org/wp-content/uploads/2026/04/Office-Meeting-Discussion.webp" alt="" class="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                      <div class="absolute top-0 left-0 w-full h-full roselinear"></div>
+                    </div>
+                    <figcaption class="keynote-caption">
+                      <p class="keynote-name">Bernardo Cascao</p>
+                      <p class="keynote-role">Partner, BMA Advogados</p>
+                    </figcaption>
+                  </figure>
                 </div>
-                <div class="keynote-copy flex-1">
+                <div class="keynote-copy">
                   <div class="keynote-heading">
                     <div class="flex items-center gap-2">
                       <div class="w-1.5 h-1.5 rounded-full bg-royalblue"></div>
                       <p class="text-sm text-royalblue font-medium">Keynote 1 · 10:00 – 10:30</p>
                     </div>
                     <h3 class="text-[30px]/[1.15] sm:text-[34px]/[1.2] lg:text-[39px]/[1.2] tracking-[-0.03em] text-midnightblue">A View from the Bench: SEP Adjudication in Brazil</h3>
-                  </div>
-                  <div class="keynote-people">
-                    <div class="keynote-person">
-                      <p class="keynote-name">Judge Maria Izabel Gomes Santanna de Araújo</p>
-                      <p class="keynote-role">3rd Business Court of Rio de Janeiro</p>
-                    </div>
-                    <div class="keynote-person">
-                      <p class="text-sm text-royalblue font-medium">In conversation with</p>
-                      <p class="keynote-name">Bernardo Cascao</p>
-                      <p class="keynote-role">Partner, BMA Advogados</p>
-                    </div>
                   </div>
                   <p class="keynote-dek">Brazil has become a key SEP jurisdiction, with courts facing questions of injunctive relief, royalties, and reach. This is a rare view from the bench — and lessons that travel well beyond Brazil.</p>
                   <ul class="keynote-themes">
@@ -283,29 +292,38 @@
                 </div>
               </article>
 
-              <article class="flex flex-col lg:flex-row-reverse gap-8 lg:gap-12 group" data-animation="fade-in">
-                <div class="keynote-media flex-1 w-full rounded-lg overflow-hidden relative aspect-[16/9]">
-                  <img src="https://fair-standards.org/wp-content/uploads/2026/04/Office-Team-Meeting-1.webp" alt="" class="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
-                  <div class="absolute top-0 left-0 w-full h-full roselinear"></div>
+              <article class="keynote-block is-reversed group" data-animation="fade-in">
+                <div class="keynote-pair">
+                  <figure class="keynote-speaker">
+                    <div class="keynote-portrait rounded-lg overflow-hidden relative">
+                      <!-- TODO: replace with Judge Edgar Brinkman headshot -->
+                      <img src="https://fair-standards.org/wp-content/uploads/2026/04/Office-Team-Meeting-1.webp" alt="" class="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                      <div class="absolute top-0 left-0 w-full h-full roselinear"></div>
+                    </div>
+                    <figcaption class="keynote-caption">
+                      <p class="keynote-name">Judge Edgar Brinkman</p>
+                      <p class="keynote-role">UPC Court of First Instance, The Hague Local Division</p>
+                    </figcaption>
+                  </figure>
+                  <figure class="keynote-speaker">
+                    <div class="keynote-portrait rounded-lg overflow-hidden relative">
+                      <!-- TODO: replace with Alexander Haertel headshot -->
+                      <img src="https://fair-standards.org/wp-content/uploads/2026/04/Focused-Work-Moment.webp" alt="" class="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
+                      <div class="absolute top-0 left-0 w-full h-full roselinear"></div>
+                    </div>
+                    <figcaption class="keynote-caption">
+                      <p class="keynote-name">Alexander Haertel</p>
+                      <p class="keynote-role">Deutsche Telekom</p>
+                    </figcaption>
+                  </figure>
                 </div>
-                <div class="keynote-copy flex-1">
+                <div class="keynote-copy">
                   <div class="keynote-heading">
                     <div class="flex items-center gap-2">
                       <div class="w-1.5 h-1.5 rounded-full bg-royalblue"></div>
                       <p class="text-sm text-royalblue font-medium">Keynote 2 · 13:45 – 14:15</p>
                     </div>
                     <h3 class="text-[30px]/[1.15] sm:text-[34px]/[1.2] lg:text-[39px]/[1.2] tracking-[-0.03em] text-midnightblue">FRAND Adjudication and Rate Setting Before the UPC</h3>
-                  </div>
-                  <div class="keynote-people">
-                    <div class="keynote-person">
-                      <p class="keynote-name">Judge Edgar Brinkman</p>
-                      <p class="keynote-role">UPC Court of First Instance, The Hague Local Division</p>
-                    </div>
-                    <div class="keynote-person">
-                      <p class="text-sm text-royalblue font-medium">In conversation with</p>
-                      <p class="keynote-name">Alexander Haertel</p>
-                      <p class="keynote-role">Deutsche Telekom</p>
-                    </div>
                   </div>
                   <p class="keynote-dek">The UPC has quickly become a pivotal forum for SEP litigation in Europe. This conversation looks at how the court is approaching FRAND, rate setting, and what that means for the licensing landscape.</p>
                   <ul class="keynote-themes">
