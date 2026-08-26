@@ -85,6 +85,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
 
+      // Deep-link: #panels?panel=2 or hash open from agenda
+      var params = new URLSearchParams(window.location.search);
+      var panelParam = params.get("panel");
+      if (panelParam != null && Number.isFinite(Number(panelParam))) {
+        activate(Number(panelParam));
+      }
+
       tabs.forEach(function (tab, index) {
         tab.addEventListener("click", function () {
           activate(index);
