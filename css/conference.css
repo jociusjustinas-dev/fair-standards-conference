@@ -929,9 +929,11 @@ body.is-lightbox-open {
   .panel-tablist {
     flex: 0 0 13.5rem;
     flex-direction: column;
+    align-self: flex-start;
     overflow: visible;
     position: sticky;
-    top: 6.5rem;
+    top: 5.75rem;
+    z-index: 5;
   }
 
   .panel-tab {
