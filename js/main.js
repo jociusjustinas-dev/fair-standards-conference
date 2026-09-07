@@ -284,6 +284,73 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })();
 
+  (function initGalleryLightbox() {
+    var root = document.querySelector("[data-gallery]");
+    var lightbox = document.querySelector("[data-lightbox]");
+    if (!root || !lightbox) return;
+
+    var items = Array.from(root.querySelectorAll("[data-gallery-index]"));
+    var imageEl = lightbox.querySelector("[data-lightbox-image]");
+    var countEl = lightbox.querySelector("[data-lightbox-count]");
+    var closeBtn = lightbox.querySelector("[data-lightbox-close]");
+    var prevBtn = lightbox.querySelector("[data-lightbox-prev]");
+    var nextBtn = lightbox.querySelector("[data-lightbox-next]");
+    var sources = items.map(function (item) {
+      var img = item.querySelector("img");
+      return img ? img.getAttribute("src") : "";
+    }).filter(Boolean);
+    var index = 0;
+    var lastFocus = null;
+
+    if (!sources.length || !imageEl) return;
+
+    function render() {
+      imageEl.src = sources[index];
+      if (countEl) countEl.textContent = index + 1 + " / " + sources.length;
+    }
+
+    function open(at) {
+      index = ((at % sources.length) + sources.length) % sources.length;
+      lastFocus = document.activeElement;
+      render();
+      lightbox.hidden = false;
+      document.body.classList.add("is-lightbox-open");
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function close() {
+      lightbox.hidden = true;
+      document.body.classList.remove("is-lightbox-open");
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    function step(delta) {
+      index = (index + delta + sources.length) % sources.length;
+      render();
+    }
+
+    items.forEach(function (item) {
+      item.addEventListener("click", function () {
+        open(Number(item.getAttribute("data-gallery-index")) || 0);
+      });
+    });
+
+    if (closeBtn) closeBtn.addEventListener("click", close);
+    if (prevBtn) prevBtn.addEventListener("click", function () { step(-1); });
+    if (nextBtn) nextBtn.addEventListener("click", function () { step(1); });
+
+    lightbox.addEventListener("click", function (e) {
+      if (e.target === lightbox) close();
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (lightbox.hidden) return;
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
+    });
+  })();
+
   (function initParallax() {
     if (reduceMotion || !hero || hero.getAttribute("data-animation") !== "parallax") return;
     var speed = Number(hero.getAttribute("data-parallax-speed") || 0.25);
