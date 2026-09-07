@@ -586,23 +586,23 @@ html {
 }
 
 .gallery-item.is-short {
-  width: clamp(200px, 28vw, 300px);
-  height: clamp(260px, 38vw, 360px);
+  width: clamp(160px, 22vw, 220px);
+  height: clamp(200px, 28vw, 260px);
 }
 
 .gallery-item.is-mid {
-  width: clamp(240px, 34vw, 360px);
-  height: clamp(320px, 48vw, 460px);
+  width: clamp(180px, 26vw, 260px);
+  height: clamp(240px, 34vw, 320px);
 }
 
 .gallery-item.is-tall {
-  width: clamp(220px, 30vw, 320px);
-  height: clamp(360px, 56vw, 540px);
+  width: clamp(170px, 24vw, 240px);
+  height: clamp(280px, 40vw, 380px);
 }
 
 .gallery-item.is-wide {
-  width: clamp(280px, 42vw, 460px);
-  height: clamp(260px, 36vw, 340px);
+  width: clamp(220px, 32vw, 320px);
+  height: clamp(200px, 28vw, 250px);
 }
 
 .gallery-item img {
