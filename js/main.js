@@ -284,71 +284,192 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })();
 
-  (function initGalleryLightbox() {
-    var root = document.querySelector("[data-gallery]");
+  (function initGalleryMarquee() {
+    var root = document.querySelector("[data-gallery-marquee]");
     var lightbox = document.querySelector("[data-lightbox]");
     if (!root || !lightbox) return;
 
-    var items = Array.from(root.querySelectorAll("[data-gallery-index]"));
+    var viewport = root.querySelector("[data-gallery-viewport]");
+    var track = root.querySelector("[data-gallery-track]");
+    var prevBtn = document.querySelector("[data-gallery-prev]");
+    var nextBtn = document.querySelector("[data-gallery-next]");
     var imageEl = lightbox.querySelector("[data-lightbox-image]");
     var countEl = lightbox.querySelector("[data-lightbox-count]");
     var closeBtn = lightbox.querySelector("[data-lightbox-close]");
-    var prevBtn = lightbox.querySelector("[data-lightbox-prev]");
-    var nextBtn = lightbox.querySelector("[data-lightbox-next]");
-    var sources = items.map(function (item) {
+    var lbPrev = lightbox.querySelector("[data-lightbox-prev]");
+    var lbNext = lightbox.querySelector("[data-lightbox-next]");
+    if (!viewport || !track || !imageEl) return;
+
+    var originals = Array.from(track.querySelectorAll("[data-gallery-index]"));
+    var sources = originals.map(function (item) {
       var img = item.querySelector("img");
       return img ? img.getAttribute("src") : "";
     }).filter(Boolean);
-    var index = 0;
+    if (!sources.length) return;
+
+    // Duplicate set for seamless loop
+    originals.forEach(function (item) {
+      var clone = item.cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      clone.tabIndex = -1;
+      track.appendChild(clone);
+    });
+
+    var items = Array.from(track.querySelectorAll("[data-gallery-index]"));
+    var reduceMotionLocal = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var offset = 0;
+    var loopWidth = 0;
+    var speed = 0.35;
+    var paused = false;
+    var dragging = false;
+    var dragMoved = false;
+    var pointerId = null;
+    var startX = 0;
+    var startOffset = 0;
+    var lightboxIndex = 0;
     var lastFocus = null;
+    var raf = 0;
 
-    if (!sources.length || !imageEl) return;
-
-    function render() {
-      imageEl.src = sources[index];
-      if (countEl) countEl.textContent = index + 1 + " / " + sources.length;
+    function measure() {
+      var styles = window.getComputedStyle(track);
+      var gap = parseFloat(styles.columnGap || styles.gap) || 0;
+      var half = originals.length;
+      var width = 0;
+      for (var i = 0; i < half; i++) {
+        width += originals[i].offsetWidth;
+        if (i < half - 1) width += gap;
+      }
+      loopWidth = width + gap;
+      wrap();
+      apply();
     }
 
-    function open(at) {
-      index = ((at % sources.length) + sources.length) % sources.length;
+    function wrap() {
+      if (!loopWidth) return;
+      while (offset <= -loopWidth) offset += loopWidth;
+      while (offset > 0) offset -= loopWidth;
+    }
+
+    function apply() {
+      track.style.transform = "translate3d(" + offset + "px, 0, 0)";
+    }
+
+    function tick() {
+      if (!paused && !dragging && !reduceMotionLocal && lightbox.hidden) {
+        offset -= speed;
+        wrap();
+        apply();
+      }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function nudge(dir) {
+      offset += dir * Math.min(320, viewport.clientWidth * 0.55);
+      wrap();
+      apply();
+    }
+
+    function renderLightbox() {
+      imageEl.src = sources[lightboxIndex];
+      if (countEl) countEl.textContent = lightboxIndex + 1 + " / " + sources.length;
+    }
+
+    function openLightbox(at) {
+      lightboxIndex = ((at % sources.length) + sources.length) % sources.length;
       lastFocus = document.activeElement;
-      render();
+      paused = true;
+      renderLightbox();
       lightbox.hidden = false;
       document.body.classList.add("is-lightbox-open");
       if (closeBtn) closeBtn.focus();
     }
 
-    function close() {
+    function closeLightbox() {
       lightbox.hidden = true;
       document.body.classList.remove("is-lightbox-open");
+      paused = false;
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
 
-    function step(delta) {
-      index = (index + delta + sources.length) % sources.length;
-      render();
+    function stepLightbox(delta) {
+      lightboxIndex = (lightboxIndex + delta + sources.length) % sources.length;
+      renderLightbox();
     }
 
     items.forEach(function (item) {
-      item.addEventListener("click", function () {
-        open(Number(item.getAttribute("data-gallery-index")) || 0);
+      item.addEventListener("click", function (e) {
+        if (dragMoved) {
+          e.preventDefault();
+          return;
+        }
+        openLightbox(Number(item.getAttribute("data-gallery-index")) || 0);
       });
     });
 
-    if (closeBtn) closeBtn.addEventListener("click", close);
-    if (prevBtn) prevBtn.addEventListener("click", function () { step(-1); });
-    if (nextBtn) nextBtn.addEventListener("click", function () { step(1); });
-
+    if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
+    if (lbPrev) lbPrev.addEventListener("click", function () { stepLightbox(-1); });
+    if (lbNext) lbNext.addEventListener("click", function () { stepLightbox(1); });
     lightbox.addEventListener("click", function (e) {
-      if (e.target === lightbox) close();
+      if (e.target === lightbox) closeLightbox();
     });
+
+    if (prevBtn) prevBtn.addEventListener("click", function () { nudge(1); });
+    if (nextBtn) nextBtn.addEventListener("click", function () { nudge(-1); });
+
+    root.addEventListener("pointerenter", function () { paused = true; });
+    root.addEventListener("pointerleave", function () {
+      if (!dragging && lightbox.hidden) paused = false;
+    });
+
+    viewport.addEventListener("pointerdown", function (e) {
+      if (e.button != null && e.button !== 0) return;
+      dragging = true;
+      dragMoved = false;
+      pointerId = e.pointerId;
+      startX = e.clientX;
+      startOffset = offset;
+      root.classList.add("is-dragging");
+      paused = true;
+      try { viewport.setPointerCapture(pointerId); } catch (err) {}
+    });
+
+    viewport.addEventListener("pointermove", function (e) {
+      if (!dragging || (pointerId != null && e.pointerId !== pointerId)) return;
+      var dx = e.clientX - startX;
+      if (Math.abs(dx) > 6) dragMoved = true;
+      offset = startOffset + dx;
+      wrap();
+      apply();
+    });
+
+    function endDrag(e) {
+      if (!dragging) return;
+      if (pointerId != null && e && e.pointerId != null && e.pointerId !== pointerId) return;
+      dragging = false;
+      pointerId = null;
+      root.classList.remove("is-dragging");
+      if (lightbox.hidden) paused = false;
+      window.setTimeout(function () { dragMoved = false; }, 0);
+    }
+
+    viewport.addEventListener("pointerup", endDrag);
+    viewport.addEventListener("pointercancel", endDrag);
 
     document.addEventListener("keydown", function (e) {
-      if (lightbox.hidden) return;
-      if (e.key === "Escape") close();
-      else if (e.key === "ArrowLeft") step(-1);
-      else if (e.key === "ArrowRight") step(1);
+      if (!lightbox.hidden) {
+        if (e.key === "Escape") closeLightbox();
+        else if (e.key === "ArrowLeft") stepLightbox(-1);
+        else if (e.key === "ArrowRight") stepLightbox(1);
+        return;
+      }
+      if (!root.matches(":hover")) return;
+      if (e.key === "ArrowLeft") nudge(1);
+      else if (e.key === "ArrowRight") nudge(-1);
     });
+
+    window.addEventListener("resize", measure);
+    measure();
+    raf = requestAnimationFrame(tick);
   })();
 
   (function initParallax() {
