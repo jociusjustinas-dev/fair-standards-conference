@@ -60,69 +60,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   (function initPanelTabs() {
-    var speakerCarousels = [];
-
-    document.querySelectorAll("[data-speaker-carousel]").forEach(function (root) {
-      var viewport = root.querySelector(".panel-carousel-viewport");
-      var track = root.querySelector("[data-speaker-track]");
-      var items = Array.from(root.querySelectorAll(".panel-speaker"));
-      var prevBtn = root.querySelector("[data-speaker-prev]");
-      var nextBtn = root.querySelector("[data-speaker-next]");
-      if (!viewport || !track || !items.length) return;
-
-      var page = 0;
-      var perView = 2;
-      var reduceMotionLocal = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      function gapPx() {
-        var styles = window.getComputedStyle(track);
-        return parseFloat(styles.columnGap || styles.gap) || 0;
-      }
-
-      function pageCount() {
-        return Math.max(1, Math.ceil(items.length / perView));
-      }
-
-      function clamp(n) {
-        return Math.max(0, Math.min(pageCount() - 1, n));
-      }
-
-      function layout() {
-        var gap = gapPx();
-        var width = viewport.clientWidth;
-        if (!width) return null;
-        var itemWidth = (width - gap * (perView - 1)) / perView;
-        items.forEach(function (item) {
-          item.style.flex = "0 0 " + itemWidth + "px";
-          item.style.width = itemWidth + "px";
-        });
-        return { gap: gap, itemWidth: itemWidth };
-      }
-
-      function go(nextPage) {
-        var metrics = layout();
-        if (!metrics) return;
-        page = clamp(nextPage);
-        var offset = page * perView * (metrics.itemWidth + metrics.gap);
-        track.style.transitionDuration = reduceMotionLocal ? "0ms" : "";
-        track.style.transform = "translate3d(-" + offset + "px, 0, 0)";
-        if (prevBtn) prevBtn.disabled = page === 0;
-        if (nextBtn) nextBtn.disabled = page >= pageCount() - 1;
-      }
-
-      if (prevBtn) prevBtn.addEventListener("click", function () { go(page - 1); });
-      if (nextBtn) nextBtn.addEventListener("click", function () { go(page + 1); });
-
-      speakerCarousels.push({ refresh: function () { go(page); } });
-      go(0);
-    });
-
-    function refreshSpeakers() {
-      speakerCarousels.forEach(function (c) { c.refresh(); });
-    }
-
-    window.addEventListener("resize", refreshSpeakers);
-
     document.querySelectorAll("[data-panel-tabs]").forEach(function (root) {
       var tabs = Array.from(root.querySelectorAll('[role="tab"]'));
       var panes = Array.from(root.querySelectorAll('[role="tabpanel"]'));
@@ -138,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
         panes.forEach(function (pane, i) {
           pane.hidden = i !== index;
         });
-        window.requestAnimationFrame(refreshSpeakers);
       }
 
       document.querySelectorAll("[data-open-panel]").forEach(function (link) {
