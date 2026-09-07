@@ -542,11 +542,16 @@ html {
   flex: none;
 }
 
+.gallery-intro {
+  margin-bottom: 4.5rem;
+}
+
 .gallery-marquee {
   --gallery-gap: 1.25rem;
   width: 100%;
   user-select: none;
   touch-action: pan-y;
+  padding-top: 0.5rem;
 }
 
 .gallery-marquee.is-dragging {
@@ -565,7 +570,7 @@ html {
 
 .gallery-marquee-track {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--gallery-gap);
   width: max-content;
   will-change: transform;
@@ -946,6 +951,10 @@ body.is-lightbox-open {
 
   .panel-speaker-name {
     font-size: 16px;
+  }
+
+  .gallery-intro {
+    margin-bottom: 6rem;
   }
 
   .gallery-marquee {
