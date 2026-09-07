@@ -535,6 +535,12 @@ html {
   color: #0d083899;
 }
 
+.gallery-section {
+  padding-top: 4rem;
+  /* Match title→photos gap, measured from the tallest portrait */
+  padding-bottom: 4.5rem;
+}
+
 .gallery-marquee-nav {
   display: flex;
   align-items: center;
@@ -551,7 +557,6 @@ html {
   width: 100%;
   user-select: none;
   touch-action: pan-y;
-  padding-top: 0.5rem;
 }
 
 .gallery-marquee.is-dragging {
@@ -953,6 +958,11 @@ body.is-lightbox-open {
 
   .panel-speaker-name {
     font-size: 16px;
+  }
+
+  .gallery-section {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
   }
 
   .gallery-intro {
