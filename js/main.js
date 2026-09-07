@@ -307,7 +307,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }).filter(Boolean);
     if (!sources.length) return;
 
-    // Duplicate set for seamless loop
     originals.forEach(function (item) {
       var clone = item.cloneNode(true);
       clone.setAttribute("aria-hidden", "true");
@@ -315,20 +314,21 @@ document.addEventListener("DOMContentLoaded", function () {
       track.appendChild(clone);
     });
 
-    var items = Array.from(track.querySelectorAll("[data-gallery-index]"));
     var reduceMotionLocal = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var offset = 0;
     var loopWidth = 0;
     var speed = 0.35;
     var paused = false;
+    var pointerDown = false;
     var dragging = false;
     var dragMoved = false;
     var pointerId = null;
     var startX = 0;
     var startOffset = 0;
+    var pressTarget = null;
     var lightboxIndex = 0;
     var lastFocus = null;
-    var raf = 0;
+    var DRAG_THRESHOLD = 10;
 
     function measure() {
       var styles = window.getComputedStyle(track);
@@ -355,16 +355,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function tick() {
-      if (!paused && !dragging && !reduceMotionLocal && lightbox.hidden) {
+      if (!paused && !pointerDown && !reduceMotionLocal && lightbox.hidden) {
         offset -= speed;
         wrap();
         apply();
       }
-      raf = requestAnimationFrame(tick);
+      requestAnimationFrame(tick);
     }
 
     function nudge(dir) {
-      offset += dir * Math.min(320, viewport.clientWidth * 0.55);
+      offset += dir * Math.min(360, viewport.clientWidth * 0.55);
       wrap();
       apply();
     }
@@ -396,16 +396,6 @@ document.addEventListener("DOMContentLoaded", function () {
       renderLightbox();
     }
 
-    items.forEach(function (item) {
-      item.addEventListener("click", function (e) {
-        if (dragMoved) {
-          e.preventDefault();
-          return;
-        }
-        openLightbox(Number(item.getAttribute("data-gallery-index")) || 0);
-      });
-    });
-
     if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
     if (lbPrev) lbPrev.addEventListener("click", function () { stepLightbox(-1); });
     if (lbNext) lbNext.addEventListener("click", function () { stepLightbox(1); });
@@ -418,42 +408,62 @@ document.addEventListener("DOMContentLoaded", function () {
 
     root.addEventListener("pointerenter", function () { paused = true; });
     root.addEventListener("pointerleave", function () {
-      if (!dragging && lightbox.hidden) paused = false;
+      if (!pointerDown && lightbox.hidden) paused = false;
     });
 
     viewport.addEventListener("pointerdown", function (e) {
       if (e.button != null && e.button !== 0) return;
-      dragging = true;
+      pointerDown = true;
+      dragging = false;
       dragMoved = false;
       pointerId = e.pointerId;
       startX = e.clientX;
       startOffset = offset;
-      root.classList.add("is-dragging");
+      pressTarget = e.target.closest("[data-gallery-index]");
       paused = true;
       try { viewport.setPointerCapture(pointerId); } catch (err) {}
     });
 
     viewport.addEventListener("pointermove", function (e) {
-      if (!dragging || (pointerId != null && e.pointerId !== pointerId)) return;
+      if (!pointerDown || (pointerId != null && e.pointerId !== pointerId)) return;
       var dx = e.clientX - startX;
-      if (Math.abs(dx) > 6) dragMoved = true;
+      if (!dragging && Math.abs(dx) < DRAG_THRESHOLD) return;
+      dragging = true;
+      dragMoved = true;
+      root.classList.add("is-dragging");
       offset = startOffset + dx;
       wrap();
       apply();
     });
 
-    function endDrag(e) {
-      if (!dragging) return;
+    function endPointer(e) {
+      if (!pointerDown) return;
       if (pointerId != null && e && e.pointerId != null && e.pointerId !== pointerId) return;
+
+      var shouldOpen = !dragMoved && pressTarget && lightbox.hidden;
+      var openIndex = shouldOpen ? Number(pressTarget.getAttribute("data-gallery-index")) || 0 : null;
+
+      pointerDown = false;
       dragging = false;
       pointerId = null;
+      pressTarget = null;
       root.classList.remove("is-dragging");
-      if (lightbox.hidden) paused = false;
-      window.setTimeout(function () { dragMoved = false; }, 0);
+
+      if (shouldOpen) openLightbox(openIndex);
+      else if (lightbox.hidden) paused = false;
     }
 
-    viewport.addEventListener("pointerup", endDrag);
-    viewport.addEventListener("pointercancel", endDrag);
+    viewport.addEventListener("pointerup", endPointer);
+    viewport.addEventListener("pointercancel", endPointer);
+
+    // Block synthetic click after drag so it doesn't double-fire
+    viewport.addEventListener("click", function (e) {
+      if (dragMoved) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragMoved = false;
+      }
+    }, true);
 
     document.addEventListener("keydown", function (e) {
       if (!lightbox.hidden) {
@@ -468,8 +478,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     window.addEventListener("resize", measure);
+    track.querySelectorAll("img").forEach(function (img) {
+      if (img.complete) return;
+      img.addEventListener("load", measure);
+    });
     measure();
-    raf = requestAnimationFrame(tick);
+    requestAnimationFrame(tick);
   })();
 
   (function initParallax() {
